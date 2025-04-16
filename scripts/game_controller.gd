@@ -3,6 +3,7 @@ extends Node
 # Game state signals
 signal game_state_changed(state)
 signal turn_changed(is_white_turn)
+signal initialized
 
 # Game states
 enum GameState {
@@ -33,6 +34,7 @@ var move_sound
 
 # Flag to avoid initial check detection
 var game_initialized = false
+var auto_start = false  # Set this to false to prevent automatic start
 
 # Called when the node enters the scene tree
 func _ready():
@@ -121,8 +123,14 @@ func _ready():
 	# Set initial state
 	change_game_state(GameState.SETUP)
 	
-	# Initialize game
-	start_game()
+	# Wait a bit then emit initialized signal
+	await get_tree().create_timer(0.1).timeout
+	emit_signal("initialized")
+	
+	# Only auto-start if we haven't been told to use custom data
+	if auto_start:
+		print("GameController: Auto-starting standard game")
+		start_game()
 
 # Function to find node by name recursively
 func find_node_by_name(node_name):
@@ -350,9 +358,18 @@ func load_custom_army(army_data):
 	if unit_placer:
 		unit_placer.clear_board()
 	
-	# Setup custom army
-	if unit_placer:
-		unit_placer.setup_custom_army(army_data)
+	# Check that we have proper army data format
+	if army_data is Dictionary and army_data.has("white") and army_data.has("black"):
+		print("GameController: Setting up white army")
+		setup_custom_side(army_data.white, true)
+		
+		print("GameController: Setting up black army")
+		setup_custom_side(army_data.black, false)
+	else:
+		print("ERROR: Invalid army data format. Expected 'white' and 'black' keys.")
+		# Fall back to standard setup
+		if unit_placer:
+			unit_placer.setup_standard_position()
 	
 	# Set state to playing
 	change_game_state(GameState.PLAYING)
@@ -361,6 +378,26 @@ func load_custom_army(army_data):
 	await get_tree().process_frame
 	await get_tree().process_frame
 	game_initialized = true
+	print("GameController: Custom army initialization complete")
+
+# Helper function to set up each side
+func setup_custom_side(side_data, is_white):
+	if not unit_placer:
+		print("ERROR: No UnitPlacer found")
+		return
+		
+	for pos_str in side_data:
+		var unit_type = side_data[pos_str]
+		
+		# Parse position string
+		var clean_str = pos_str.trim_prefix("(").trim_suffix(")")
+		var parts = clean_str.split(", ")
+		if parts.size() >= 2:
+			var pos_x = int(parts[0])
+			var pos_y = int(parts[1])
+			
+			print("Placing", unit_type, "at", pos_x, pos_y, "(white: " + str(is_white) + ")")
+			unit_placer.create_unit(unit_type, is_white, pos_x, pos_y)
 
 # Change game state
 func change_game_state(new_state):

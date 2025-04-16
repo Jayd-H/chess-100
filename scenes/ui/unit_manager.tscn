@@ -3,13 +3,12 @@
 [ext_resource type="Script" path="res://scripts/ui/unit_manager.gd" id="1_bamhf"]
 [ext_resource type="Script" path="res://scripts/ui/placement_manager.gd" id="3_4n32h"]
 [ext_resource type="PackedScene" uid="uid://cx208lxpn8m4d" path="res://scenes/ui/unit_selector.tscn" id="4_6eb2f"]
-[ext_resource type="PackedScene" uid="uid://dl1fvfwne7oyn" path="res://scenes/chess_board.tscn" id="5_stjm4"]
+[ext_resource type="PackedScene" uid="uid://cmf8krij1m3ow" path="res://scenes/board_view.tscn" id="4_f2jtx"]
 
 [node name="UnitManager" type="Node2D"]
 script = ExtResource("1_bamhf")
 
-[node name="ChessBoard" parent="." instance=ExtResource("5_stjm4")]
-position = Vector2(605, 337)
+[node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="PlacementManager" type="Node" parent="."]
 script = ExtResource("3_4n32h")
@@ -18,18 +17,16 @@ script = ExtResource("3_4n32h")
 
 [node name="UI" type="Control" parent="CanvasLayer"]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="UnitSelector" parent="CanvasLayer/UI" instance=ExtResource("4_6eb2f")]
 layout_mode = 0
-offset_left = 805.0
-offset_top = 185.0
-offset_right = 885.0
-offset_bottom = 499.0
+offset_left = 756.0
+offset_top = 201.0
+offset_right = 836.0
+offset_bottom = 515.0
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/UI"]
 layout_mode = 0
@@ -58,6 +55,7 @@ text = "Budget: 0"
 
 [node name="WarningLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 8
 
 [node name="ArmyName" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
@@ -80,3 +78,5 @@ layout_mode = 2
 [node name="BackButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
 text = "Back"
+
+[node name="BoardView" parent="." instance=ExtResource("4_f2jtx")]

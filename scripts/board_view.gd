@@ -88,7 +88,7 @@ func get_square_size():
 
 # Handle square clicks
 func _on_square_clicked(x, y):
-	# Emit signal for others to handle
+	print("BoardView: Square clicked at ", x, ", ", y)  # Debug output
 	square_clicked.emit(x, y)
 
 # Handle square hover

@@ -166,30 +166,36 @@ func clear_board():
 			remove_unit(x, y)
 
 # Setup custom army from data
-func setup_custom_army(army_data, is_white=true):
-	# Calculate row offsets based on side
-	var row_offset = 0
-	if is_white:
-		row_offset = 5  # Start at row 5 for white (rows 5,6,7)
+func setup_custom_army(army_data):
+	print("UnitPlacer: Setting up custom army")
 	
-	# Parse and place each unit
-	for pos_str in army_data.keys():
-		var unit_type = army_data[pos_str]
+	# Check if we have the proper format with white and black sides
+	if army_data is Dictionary and army_data.has("white") and army_data.has("black"):
+		# Setup white pieces
+		print("UnitPlacer: Setting up white pieces")
+		for pos_str in army_data.white:
+			var unit_type = army_data.white[pos_str]
+			place_custom_piece(pos_str, unit_type, true)
 		
-		# Parse position string
-		var pos_x = 0
-		var pos_y = 0
+		# Setup black pieces
+		print("UnitPlacer: Setting up black pieces")
+		for pos_str in army_data.black:
+			var unit_type = army_data.black[pos_str]
+			place_custom_piece(pos_str, unit_type, false)
+	else:
+		print("UnitPlacer: Invalid army data format! Falling back to standard position.")
+		setup_standard_position()
+
+# Helper function to place a custom piece from position string
+func place_custom_piece(pos_str, unit_type, is_white):
+	# Parse position string
+	var clean_str = pos_str.trim_prefix("(").trim_suffix(")")
+	var parts = clean_str.split(", ")
+	if parts.size() >= 2:
+		var pos_x = int(parts[0])
+		var pos_y = int(parts[1])
 		
-		if pos_str.contains(","):
-			var clean_str = pos_str.replace("(", "").replace(")", "").replace(" ", "")
-			var parts = clean_str.split(",")
-			if parts.size() >= 2:
-				pos_x = int(parts[0])
-				pos_y = int(parts[1])
-				
-				# Adjust row for proper side if needed
-				if is_white and pos_y < 5:
-					pos_y += row_offset
-		
-		# Create the unit
+		print("UnitPlacer: Placing", unit_type, "at", pos_x, pos_y, "(white: " + str(is_white) + ")")
 		create_unit(unit_type, is_white, pos_x, pos_y)
+	else:
+		print("UnitPlacer: Invalid position format -", pos_str)

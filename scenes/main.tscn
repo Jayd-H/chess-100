@@ -11,5 +11,16 @@ position = Vector2(-1, 0)
 zoom = Vector2(2, 2)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+z_index = -5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.252707, 0.339668, 0.35575, 1)
 
 [node name="ChessBoard" parent="." instance=ExtResource("5_ppqcj")]
+z_index = 5

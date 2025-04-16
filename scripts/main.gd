@@ -4,11 +4,14 @@ extends Node2D
 var chess_board = null
 var game_controller = null
 var turn_label = null
+var custom_army_data = null
 
-# Called when the node enters the scene tree
 func _ready():
 	# Wait one frame to make sure all nodes are loaded
 	await get_tree().process_frame
+	
+	# Load custom army data if available
+	load_custom_army_data()
 	
 	# Find references more reliably
 	chess_board = find_node_by_name("ChessBoard")
@@ -31,6 +34,14 @@ func _ready():
 	# Create UI elements if they don't exist
 	setup_ui()
 
+	# Wait for GameController to be fully initialized
+	if game_controller.has_signal("initialized"):
+		if not game_controller.is_connected("initialized", _on_game_controller_initialized):
+			game_controller.connect("initialized", _on_game_controller_initialized)
+	else:
+		print("WARNING: GameController doesn't have initialized signal. Proceeding anyway.")
+		call_deferred("_on_game_controller_initialized")
+
 	# Disconnect any existing connections to avoid duplicates
 	if game_controller:
 		if game_controller.is_connected("game_state_changed", _on_game_state_changed):
@@ -44,6 +55,51 @@ func _ready():
 
 	# Update the UI initially
 	update_ui()
+
+# Load custom army data from temp file
+func load_custom_army_data():
+	var file = FileAccess.open("user://temp_game_data.json", FileAccess.READ)
+	if file:
+		var text = file.get_as_text()
+		file.close()
+		
+		print("Loading game data: " + text)
+		
+		var json = JSON.new()
+		var error = json.parse(text)
+		if error == OK:
+			var data = json.get_data()
+			if data and data.has("army_data") and data.army_data != null:
+				custom_army_data = data.army_data
+				print("Custom army data loaded successfully")
+			else:
+				print("Using standard army (no custom data found in temp file)")
+		else:
+			print("JSON parse error: " + json.get_error_message())
+
+# Handle GameController initialization
+func _on_game_controller_initialized():
+	print("Main: GameController initialized, setting up game...")
+	
+	# Setup the game with custom army if available
+	if custom_army_data != null:
+		print("Main: Starting game with custom army configuration!")
+		if game_controller.has_method("load_custom_army"):
+			# Prevent game controller from auto-starting if it has that property
+			if "auto_start" in game_controller:
+				game_controller.auto_start = false
+			game_controller.load_custom_army(custom_army_data)
+		else:
+			print("ERROR: GameController doesn't have load_custom_army method")
+	else:
+		print("Main: Starting game with standard chess configuration")
+		# Allow auto-start if it has that property
+		if "auto_start" in game_controller:
+			game_controller.auto_start = true
+		if game_controller.has_method("start_game"):
+			game_controller.start_game()
+		else:
+			print("ERROR: GameController doesn't have start_game method")
 
 # Function to find a node by name recursively
 func find_node_by_name(node_name):
