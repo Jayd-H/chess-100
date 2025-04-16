@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://dl1fvfwne7oyn"]
+
+[ext_resource type="Script" path="res://scripts/board_view.gd" id="1_orh56"]
+[ext_resource type="Texture2D" uid="uid://ckkqekvnkyav6" path="res://assets/Board.png" id="2_4xlvd"]
+[ext_resource type="Script" path="res://scripts/chess_logic.gd" id="3_elueb"]
+[ext_resource type="Script" path="res://scripts/unit_placer.gd" id="4_megg0"]
+[ext_resource type="Script" path="res://scripts/game_controller.gd" id="5_uxktn"]
+
+[node name="ChessBoard" type="Node2D"]
+
+[node name="BoardView" type="Node2D" parent="."]
+script = ExtResource("1_orh56")
+
+[node name="ChessBoardSprite" type="Sprite2D" parent="BoardView"]
+texture = ExtResource("2_4xlvd")
+
+[node name="Squares" type="Node2D" parent="BoardView"]
+
+[node name="Units" type="Node2D" parent="BoardView"]
+
+[node name="Dots" type="Node2D" parent="BoardView"]
+
+[node name="ChessLogic" type="Node" parent="."]
+script = ExtResource("3_elueb")
+
+[node name="UnitPlacer" type="Node" parent="."]
+script = ExtResource("4_megg0")
+
+[node name="GameController" type="Node" parent="."]
+script = ExtResource("5_uxktn")

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://wkoc43dtvk1j"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_swrla"]
+[ext_resource type="PackedScene" uid="uid://dl1fvfwne7oyn" path="res://scenes/chess_board.tscn" id="5_ppqcj"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_swrla")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(-1, 0)
+zoom = Vector2(2, 2)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ChessBoard" parent="." instance=ExtResource("5_ppqcj")]

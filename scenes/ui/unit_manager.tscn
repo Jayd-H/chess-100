@@ -1,0 +1,82 @@
+[gd_scene load_steps=5 format=3 uid="uid://d3bbrucf0li7i"]
+
+[ext_resource type="Script" path="res://scripts/ui/unit_manager.gd" id="1_bamhf"]
+[ext_resource type="Script" path="res://scripts/ui/placement_manager.gd" id="3_4n32h"]
+[ext_resource type="PackedScene" uid="uid://cx208lxpn8m4d" path="res://scenes/ui/unit_selector.tscn" id="4_6eb2f"]
+[ext_resource type="PackedScene" uid="uid://dl1fvfwne7oyn" path="res://scenes/chess_board.tscn" id="5_stjm4"]
+
+[node name="UnitManager" type="Node2D"]
+script = ExtResource("1_bamhf")
+
+[node name="ChessBoard" parent="." instance=ExtResource("5_stjm4")]
+position = Vector2(605, 337)
+
+[node name="PlacementManager" type="Node" parent="."]
+script = ExtResource("3_4n32h")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UnitSelector" parent="CanvasLayer/UI" instance=ExtResource("4_6eb2f")]
+layout_mode = 0
+offset_left = 805.0
+offset_top = 185.0
+offset_right = 885.0
+offset_bottom = 499.0
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/UI"]
+layout_mode = 0
+offset_right = 400.0
+offset_bottom = 720.0
+color = Color(0.146319, 0.237705, 0.284286, 0.509804)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 700.0
+
+[node name="Title" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "Army Builder"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "Budget: 0"
+
+[node name="WarningLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="ArmyName" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "ArmyName: "
+
+[node name="ArmyNameInput" type="LineEdit" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="SaveButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "Save Army"
+
+[node name="ClearButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "Clear Board"
+
+[node name="HSeparator2" type="HSeparator" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
+layout_mode = 2
+text = "Back"

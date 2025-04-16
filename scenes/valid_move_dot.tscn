@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cio74koj0x8bc"]
+
+[ext_resource type="Script" path="res://scripts/valid_move_dot.gd" id="1_4ukus"]
+
+[node name="ValidMoveDot" type="Node2D"]
+script = ExtResource("1_4ukus")

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dg5s7te4m1vu4"]
+
+[ext_resource type="Script" path="res://scripts/units/chancellor.gd" id="1_1aec5"]
+
+[node name="Chancellor" type="Node2D"]
+script = ExtResource("1_1aec5")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
