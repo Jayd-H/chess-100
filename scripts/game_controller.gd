@@ -229,7 +229,7 @@ func _on_move_made(unit, from_pos, to_pos, is_capture, captured_unit):
 		board_view.highlight_square(check_highlight_pos.x, check_highlight_pos.y, false)
 		check_highlight_pos = null
 	
-	# Reset the game state to PLAYING (will be updated by check_game_state if necessary)
+	# Reset to PLAYING state - the check detection will set it back if needed
 	change_game_state(GameState.PLAYING)
 	
 	# Play sound effect
@@ -315,6 +315,9 @@ func _on_unit_removed(x, y):
 # Start a new game
 func start_game():
 	print("GameController: Starting new game")
+	# Explicitly set to false during setup
+	game_initialized = false
+	
 	# Reset chess logic
 	if chess_logic:
 		chess_logic.reset_game()

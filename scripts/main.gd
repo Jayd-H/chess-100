@@ -31,15 +31,16 @@ func _ready():
 	# Create UI elements if they don't exist
 	setup_ui()
 
-	# Connect to game controller signals
+	# Disconnect any existing connections to avoid duplicates
 	if game_controller:
-		if game_controller.has_signal("game_state_changed"):
-			if not game_controller.is_connected("game_state_changed", _on_game_state_changed):
-				game_controller.game_state_changed.connect(_on_game_state_changed)
+		if game_controller.is_connected("game_state_changed", _on_game_state_changed):
+			game_controller.game_state_changed.disconnect(_on_game_state_changed)
+		if game_controller.is_connected("turn_changed", _on_turn_changed):
+			game_controller.turn_changed.disconnect(_on_turn_changed)
 		
-		if game_controller.has_signal("turn_changed"):
-			if not game_controller.is_connected("turn_changed", _on_turn_changed):
-				game_controller.turn_changed.connect(_on_turn_changed)
+		# Connect to game controller signals
+		game_controller.game_state_changed.connect(_on_game_state_changed)
+		game_controller.turn_changed.connect(_on_turn_changed)
 
 	# Update the UI initially
 	update_ui()
@@ -100,9 +101,9 @@ func update_ui():
 	# Update game state
 	var state = game_controller.get_current_state()
 	if state != null:
-		# We need to use a match with constants since we can't directly access GameState enum
+		# Use the correct state values - CHECK is 2, not 1
 		match state:
-			1:  # GameState.CHECK
+			2:  # GameState.CHECK
 				turn_text += " (Check!)"
 			3:  # GameState.CHECKMATE
 				var result = game_controller.get_game_result()
