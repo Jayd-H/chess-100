@@ -22,5 +22,18 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.252707, 0.339668, 0.35575, 1)
 
+[node name="BackButton" type="Button" parent="CanvasLayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 9.0
+offset_top = -43.0
+offset_right = 98.0
+offset_bottom = -7.0
+grow_vertical = 0
+text = "Back"
+
 [node name="ChessBoard" parent="." instance=ExtResource("5_ppqcj")]
 z_index = 5
+
+[connection signal="pressed" from="CanvasLayer/BackButton" to="." method="_on_back_button_pressed"]

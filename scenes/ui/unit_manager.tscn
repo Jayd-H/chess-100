@@ -9,37 +9,74 @@
 script = ExtResource("1_bamhf")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2, 2)
 
 [node name="PlacementManager" type="Node" parent="."]
 script = ExtResource("3_4n32h")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = -1
 
 [node name="UI" type="Control" parent="CanvasLayer"]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
+[node name="ColorRect3" type="ColorRect" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.341176, 0.447059, 0.466667, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer/UI"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -259.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.146319, 0.237705, 0.284286, 0.509804)
+
 [node name="UnitSelector" parent="CanvasLayer/UI" instance=ExtResource("4_6eb2f")]
-layout_mode = 0
-offset_left = 756.0
-offset_top = 201.0
-offset_right = 836.0
-offset_bottom = 515.0
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = 43.0
+offset_right = -25.0
+offset_bottom = -43.0
+grow_horizontal = 0
+grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/UI"]
-layout_mode = 0
-offset_right = 400.0
-offset_bottom = 720.0
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 264.0
+grow_vertical = 2
 color = Color(0.146319, 0.237705, 0.284286, 0.509804)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UI"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 380.0
-offset_bottom = 700.0
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 37.0
+offset_top = 36.0
+offset_right = 203.0
+offset_bottom = -36.0
+grow_vertical = 2
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
@@ -74,9 +111,11 @@ text = "Clear Board"
 
 [node name="HSeparator2" type="HSeparator" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 10
 
 [node name="BackButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 8
 text = "Back"
 
 [node name="BoardView" parent="." instance=ExtResource("4_f2jtx")]

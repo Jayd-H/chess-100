@@ -66,7 +66,7 @@ func _ready():
 
 # Update the budget display
 func update_budget_display():
-	budget_label.text = "White: " + str(white_budget) + " / Black: " + str(black_budget)
+	budget_label.text = "W: " + str(white_budget) + " / B: " + str(black_budget)
 
 # Handle clicks from BoardView signal
 func _on_board_square_clicked(x, y):
@@ -252,7 +252,7 @@ func update_king_status():
 		save_button.disabled = false
 	else:
 		if !has_white_king and !has_black_king:
-			warning_label.text = "Warning: Both sides need a king!"
+			warning_label.text = "Warning: Both sides need kings!"
 		elif !has_white_king:
 			warning_label.text = "Warning: White needs a king!"
 		else:

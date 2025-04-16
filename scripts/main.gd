@@ -5,6 +5,7 @@ var chess_board = null
 var game_controller = null
 var turn_label = null
 var custom_army_data = null
+@onready var back_button: Button = $CanvasLayer/BackButton
 
 func _ready():
 	# Wait one frame to make sure all nodes are loaded
@@ -186,3 +187,7 @@ func _on_game_state_changed(state):
 func _on_turn_changed(is_white_turn):
 	print("Turn changed to: ", "White" if is_white_turn else "Black")
 	update_ui()
+
+
+func _on_back_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
