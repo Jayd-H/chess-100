@@ -105,6 +105,12 @@ func highlight_square(x, y, enable=true):
 		else:
 			squares[x][y].highlight(false)
 
+func highlight_special_square(x, y, color=Color(0.2, 0.6, 0.9, 0.4)):
+	if x >= 0 and x < 8 and y >= 0 and y < 8:
+		if squares[x][y].has_node("ColorRect"):
+			squares[x][y].get_node("ColorRect").color = color
+			squares[x][y].get_node("ColorRect").visible = true
+
 func highlight_selected_square(x, y):
 	if x >= 0 and x < 8 and y >= 0 and y < 8:
 		# Yellow highlight for selected square

@@ -6,6 +6,8 @@ signal check_occurred(is_white_king)
 signal checkmate_occurred(is_white_king)
 signal stalemate_occurred()
 
+var has_diplomats = false
+
 # Board representation: null = empty, otherwise contains unit reference
 var board = []
 const BOARD_SIZE = 8
@@ -102,6 +104,8 @@ func get_valid_moves_for_selected():
 	return get_valid_moves(selected_unit)
 
 # Get valid moves for a specific unit
+# Get valid moves for a specific unit
+# Get valid moves for a specific unit
 func get_valid_moves(unit):
 	if unit == null:
 		return []
@@ -121,6 +125,22 @@ func get_valid_moves(unit):
 			if not move in all_moves:
 				all_moves.append(move)
 	
+	# Filter out captures of diplomat-protected squares
+	if has_diplomats:
+		var filtered_moves = []
+		for move in all_moves:
+			var target = board[int(move.x)][int(move.y)]
+			if target != null:  # This is a capture move
+				# Only check diplomat protection for the target square
+				var diplomat_script = load("res://scripts/units/diplomat.gd")
+				if diplomat_script and diplomat_script.has_method("is_target_protected_by_diplomat"):
+					if diplomat_script.is_target_protected_by_diplomat(move, board):
+						continue  # Skip this move - target is protected
+			
+			filtered_moves.append(move)
+		
+		all_moves = filtered_moves
+	
 	# Filter out moves that would leave the king in check
 	var legal_moves = []
 	for move in all_moves:
@@ -128,10 +148,55 @@ func get_valid_moves(unit):
 			legal_moves.append(move)
 	
 	return legal_moves
+	
+func is_capture_prevented(from_pos, to_pos):
+	# Check if there's a diplomat adjacent to the capturing piece
+	var from_x = int(from_pos.x)
+	var from_y = int(from_pos.y)
+	
+	# Scan the board for diplomats of the opposite color to the moving piece
+	var attacker = board[from_x][from_y]
+	if attacker == null:
+		return false
+		
+	# Only need to check if a capture is being attempted
+	var target = board[int(to_pos.x)][int(to_pos.y)]
+	if target == null:
+		return false  # Not a capture
+	
+	# Check all surrounding squares for enemy diplomats
+	for x_offset in range(-1, 2):
+		for y_offset in range(-1, 2):
+			if x_offset == 0 and y_offset == 0:
+				continue  # Skip the piece's own square
+				
+			var check_x = from_x + x_offset
+			var check_y = from_y + y_offset
+			
+			# Make sure the position is on the board
+			if check_x < 0 or check_x > 7 or check_y < 0 or check_y > 7:
+				continue
+				
+			# Check for a diplomat of the opposite color
+			var check_piece = board[check_x][check_y]
+			if check_piece != null and check_piece.unit_type == "Diplomat" and check_piece.is_white != attacker.is_white:
+				print("Capture prevented by diplomat at ", check_x, ", ", check_y)
+				return true  # Capture is prevented
+	
+	return false  # No diplomat preventing capture
 
 # Check if a move is valid
 func is_valid_move(unit, target_pos):
 	var moves = get_valid_moves(unit)
+	
+	# Check if this is a capture move
+	if unit != null and board[int(target_pos.x)][int(target_pos.y)] != null:
+		# Check for diplomat prevention using static method
+		var diplomat_script = load("res://scripts/units/diplomat.gd")
+		if diplomat_script and diplomat_script.has_method("prevents_capture"):
+			if diplomat_script.prevents_capture(unit.board_position, target_pos, board):
+				return false  # Capture prevented by diplomat
+	
 	return target_pos in moves
 
 # Check if a move would leave the king in check
@@ -305,8 +370,14 @@ func get_board():
 func place_unit(unit, x, y):
 	if x >= 0 and x < BOARD_SIZE and y >= 0 and y < BOARD_SIZE:
 		board[x][y] = unit
+		
+		# Check if this is a diplomat
+		if unit.unit_type == "Diplomat":
+			has_diplomats = true
+			
 		return true
 	return false
+
 
 # Remove a unit from the board
 func remove_unit(x, y):

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhp4r6hn3oemg"]
+
+[ext_resource type="Script" path="res://scripts/units/slime.gd" id="1_4x0q7"]
+
+[node name="Slime" type="Node2D"]
+script = ExtResource("1_4x0q7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]

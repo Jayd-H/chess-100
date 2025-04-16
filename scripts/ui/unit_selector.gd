@@ -2,15 +2,11 @@ extends Panel
 
 signal unit_selected(unit_type, is_white)
 
-# Array of all unit types to display
-var unit_types = [
-	"Pawn", "Rook", "Knight", "Bishop", "Queen", "King", "Elephant", "Wizard", "Chancellor", "Cannon"
-]
-
 # References
 var placement_manager = null
 var unit_buttons = []
 var container = null
+var unit_types = []  # Will be populated automatically
 
 func _ready():
 	# Find the container
@@ -24,8 +20,64 @@ func _ready():
 	if not placement_manager:
 		print("WARNING: PlacementManager not found, unit placement will not work")
 	
+	# Load all unit types from scripts
+	load_unit_types()
+	
 	# Create unit buttons
 	create_unit_buttons()
+
+func load_unit_types():
+	unit_types.clear()
+	
+	# Open the units directory
+	var dir = DirAccess.open("res://scripts/units/")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		
+		while file_name != "":
+			# Only consider GDScript files
+			if file_name.ends_with(".gd"):
+				# Extract unit type name from the file name (remove .gd extension)
+				var unit_type = file_name.get_basename().capitalize()
+				
+				print("Found unit type: ", unit_type)
+				unit_types.append(unit_type)
+			
+			file_name = dir.get_next()
+		
+		dir.list_dir_end()
+	else:
+		push_error("ERROR: Could not access scripts/units directory")
+	
+	# Sort the units in a more logical order
+	# Put King and Queen first, then standard chess pieces, then others alphabetically
+	unit_types.sort_custom(func(a, b):
+		# Define priority order for standard pieces
+		var priority = {
+			"King": 0,
+			"Queen": 1,
+			"Rook": 2, 
+			"Bishop": 3,
+			"Knight": 4,
+			"Pawn": 5
+		}
+		
+		# Check if both are standard pieces
+		if priority.has(a) and priority.has(b):
+			return priority[a] < priority[b]
+		# If only a is standard, it goes first
+		elif priority.has(a):
+			return true
+		# If only b is standard, it goes first
+		elif priority.has(b):
+			return false
+		# Otherwise sort alphabetically
+		else:
+			return a < b
+	)
+	
+	print("Loaded unit types: ", unit_types)
 
 func create_unit_buttons():
 	if not container:
