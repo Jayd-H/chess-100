@@ -130,6 +130,14 @@ func _on_unit_selected(unit_type, is_white):
 	else:
 		push_error("No placement manager available")
 
+func set_white_only(white_only):
+	for button in unit_buttons:
+		# For each button, only enable the white button if white_only is true
+		if button.has_node("VBoxContainer/HBoxContainer/BlackButton"):
+			var black_button = button.get_node("VBoxContainer/HBoxContainer/BlackButton")
+			black_button.visible = !white_only
+			black_button.disabled = white_only
+
 # Clear all selections
 func clear_selection():
 	for button in unit_buttons:

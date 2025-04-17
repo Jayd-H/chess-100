@@ -1,10 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://wkoc43dtvk1j"]
+[gd_scene load_steps=3 format=3 uid="uid://beoh388aty6d6"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1_swrla"]
-[ext_resource type="PackedScene" uid="uid://dl1fvfwne7oyn" path="res://scenes/chess_board.tscn" id="5_ppqcj"]
+[ext_resource type="PackedScene" uid="uid://dl1fvfwne7oyn" path="res://scenes/chess_board.tscn" id="1_50bhw"]
+[ext_resource type="Script" path="res://scripts/network_main.gd" id="1_ywh7d"]
 
-[node name="Main" type="Node2D"]
-script = ExtResource("1_swrla")
+[node name="NetworkMain" type="Node2D"]
+script = ExtResource("1_ywh7d")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(-1, 0)
@@ -36,8 +36,14 @@ grow_vertical = 0
 text = "Back"
 metadata/_edit_use_anchors_ = true
 
-[node name="ChessBoard" parent="." instance=ExtResource("5_ppqcj")]
+[node name="TurnLabel" type="Label" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 16.0
+
+[node name="NetworkLabel" type="Label" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 16.0
+
+[node name="ChessBoard" parent="." instance=ExtResource("1_50bhw")]
 z_index = 5
 scale = Vector2(0.5, 0.5)
-
-[connection signal="pressed" from="CanvasLayer/BackButton" to="." method="_on_back_button_pressed"]

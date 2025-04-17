@@ -26,6 +26,16 @@ offset_bottom = 133.0
 grow_vertical = 2
 theme_override_constants/separation = 16
 
+[node name="MultiplayerButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+theme = ExtResource("2_46nma")
+theme_override_colors/font_hover_pressed_color = Color(0.984314, 0, 0, 1)
+theme_override_colors/font_color = Color(0.921569, 0.929412, 0.913725, 1)
+theme_override_font_sizes/font_size = 16
+text = "Multiplayer"
+alignment = 0
+
 [node name="PlayButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
@@ -33,7 +43,7 @@ theme = ExtResource("2_46nma")
 theme_override_colors/font_hover_pressed_color = Color(0.984314, 0, 0, 1)
 theme_override_colors/font_color = Color(0.921569, 0.929412, 0.913725, 1)
 theme_override_font_sizes/font_size = 16
-text = "Play"
+text = "SinglePlayer"
 alignment = 0
 
 [node name="UnitManagerButton" type="Button" parent="VBoxContainer"]
@@ -70,4 +80,5 @@ grow_horizontal = 0
 texture_normal = ExtResource("2_6n7qy")
 stretch_mode = 0
 
+[connection signal="pressed" from="VBoxContainer/MultiplayerButton" to="." method="_on_multiplayer_button_pressed"]
 [connection signal="pressed" from="SettingsButton" to="." method="_on_settings_button_pressed"]
