@@ -28,14 +28,15 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 53.0
-offset_top = 39.0
+offset_top = 31.0
 offset_right = -53.0
-offset_bottom = 131.0
+offset_bottom = 335.0
 grow_horizontal = 2
+theme_override_constants/separation = 19
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-text = "Multiplayer"
+text = "Create a Room"
 horizontal_alignment = 1
 
 [node name="HostSection" type="VBoxContainer" parent="VBoxContainer"]
@@ -53,6 +54,9 @@ layout_mode = 2
 
 [node name="HostRoomInput" type="LineEdit" parent="VBoxContainer/HostSection/HostRoomContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+placeholder_text = "Room Name"
 
 [node name="HostButton" type="Button" parent="VBoxContainer/HostSection"]
 layout_mode = 2
@@ -73,6 +77,8 @@ layout_mode = 2
 
 [node name="JoinRoomInput" type="LineEdit" parent="VBoxContainer/JoinSection/JoinRoomController"]
 layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Room Name"
 
 [node name="IPContainer" type="HBoxContainer" parent="VBoxContainer/JoinSection"]
 layout_mode = 2
@@ -82,6 +88,7 @@ layout_mode = 2
 
 [node name="IPInput" type="LineEdit" parent="VBoxContainer/JoinSection/IPContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 placeholder_text = "IP"
 
 [node name="JoinButton" type="Button" parent="VBoxContainer/JoinSection"]
@@ -96,4 +103,5 @@ layout_mode = 2
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 4
 text = "Back"
