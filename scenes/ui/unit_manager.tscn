@@ -44,7 +44,7 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -259.0
+offset_left = -99.0
 grow_horizontal = 0
 grow_vertical = 2
 color = Color(0.146319, 0.237705, 0.284286, 0.509804)
@@ -53,20 +53,17 @@ color = Color(0.146319, 0.237705, 0.284286, 0.509804)
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = 43.0
-offset_right = -25.0
-offset_bottom = -43.0
+offset_left = -84.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = -9.0
 grow_horizontal = 0
-grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/UI"]
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_right = 264.0
+offset_right = 120.0
 grow_vertical = 2
 color = Color(0.146319, 0.237705, 0.284286, 0.509804)
 
@@ -74,50 +71,58 @@ color = Color(0.146319, 0.237705, 0.284286, 0.509804)
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 37.0
-offset_top = 36.0
-offset_right = 203.0
-offset_bottom = -36.0
+offset_left = 5.0
+offset_top = 14.0
+offset_right = 115.0
+offset_bottom = -10.0
 grow_vertical = 2
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 8
 text = "Army Builder"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="CanvasLayer/UI/VBoxContainer"]
-layout_mode = 2
-
 [node name="BudgetLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-text = "Budget: 0"
-
-[node name="WarningLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
-layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 8
+text = "Budget: 0"
+autowrap_mode = 2
 
 [node name="ArmyName" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 8
 text = "ArmyName: "
 
 [node name="ArmyNameInput" type="LineEdit" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 8
 
 [node name="SaveButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 8
 text = "Save Army"
 
 [node name="ClearButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 8
 text = "Clear Board"
 
-[node name="HSeparator2" type="HSeparator" parent="CanvasLayer/UI/VBoxContainer"]
+[node name="WarningLabel" type="Label" parent="CanvasLayer/UI/VBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
-size_flags_vertical = 10
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 8
+autowrap_mode = 3
 
 [node name="BackButton" type="Button" parent="CanvasLayer/UI/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 8
+size_flags_vertical = 10
+theme_override_font_sizes/font_size = 8
 text = "Back"
 
 [node name="BoardView" parent="." instance=ExtResource("4_f2jtx")]
+scale = Vector2(0.5, 0.5)

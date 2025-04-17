@@ -3,30 +3,33 @@
 [ext_resource type="Script" path="res://scripts/ui/unit_button.gd" id="1_v63id"]
 
 [node name="UnitButton" type="Panel"]
-offset_right = 70.0
-offset_bottom = 38.0
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.203
+offset_right = -597.0
+offset_bottom = 17.92
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_v63id")
 
-[node name="WhiteButton" type="TextureButton" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 2.0
-offset_top = 3.0
-offset_right = 34.0
-offset_bottom = 35.0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = -4
 
-[node name="BlackButton" type="TextureButton" parent="."]
-layout_mode = 0
-offset_left = 36.0
-offset_top = 3.0
-offset_right = 68.0
-offset_bottom = 35.0
-
-[node name="UnitLabel" type="Label" parent="."]
-layout_mode = 0
-offset_left = 2.0
-offset_top = -2.0
-offset_right = 70.0
-offset_bottom = 14.0
+[node name="UnitLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 8
 text = "pawn"
 horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -8
+
+[node name="WhiteButton" type="TextureButton" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="BlackButton" type="TextureButton" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2

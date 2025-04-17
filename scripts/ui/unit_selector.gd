@@ -5,15 +5,11 @@ signal unit_selected(unit_type, is_white)
 # References
 var placement_manager = null
 var unit_buttons = []
-var container = null
 var unit_types = []  # Will be populated automatically
 
+@onready var container: VBoxContainer = $ScrollContainer/VBoxContainer
+
 func _ready():
-	# Find the container
-	container = find_child("VBoxContainer", true, false)
-	if not container:
-		push_error("ERROR: VBoxContainer not found in UnitSelector")
-		return
 		
 	# Get reference to the placement manager
 	placement_manager = get_node("/root").find_child("PlacementManager", true, false)
