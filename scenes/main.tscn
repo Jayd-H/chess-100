@@ -21,7 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
-color = Color(0.252707, 0.339668, 0.35575, 1)
+color = Color(0.25098, 0.341176, 0.356863, 1)
 
 [node name="BackButton" type="Button" parent="CanvasLayer"]
 anchors_preset = 2

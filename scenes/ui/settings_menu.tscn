@@ -1,0 +1,79 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5e4m2dsxhs2k"]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="1_1ny2y"]
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_1ny2y")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0117647, 0.262745, 0.345098, 0.478431)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -178.0
+offset_top = 75.0
+offset_right = 178.0
+offset_bottom = 611.0
+grow_horizontal = 2
+theme_override_constants/separation = 32
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_stretch_ratio = 14.33
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="FullscreenLabel" type="Label" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Fullscreen:"
+
+[node name="FullscreenToggle" type="CheckButton" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="MasterVolumeLabel" type="Label" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Master Volume:"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ResolutionLabel" type="Label" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Resolution:"
+
+[node name="ResolutionDropdown" type="OptionButton" parent="CanvasLayer/VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 10
+
+[node name="BackButton" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsContainer"]
+layout_mode = 2
+text = "Back"
+
+[node name="ApplyButton" type="Button" parent="CanvasLayer/VBoxContainer/ButtonsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Apply"
