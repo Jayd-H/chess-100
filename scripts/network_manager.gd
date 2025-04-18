@@ -46,20 +46,16 @@ signal game_started(is_white)
 signal checkmate_received()
 
 func _ready():
+	print("NetworkManager initializing...")
 	# Set random seed based on time
 	randomize()
 	
-	# Ensure we're disconnected from any signals first to avoid duplicates
-	if multiplayer.is_connected("peer_connected", _on_peer_connected):
-		multiplayer.peer_connected.disconnect(_on_peer_connected)
-	if multiplayer.is_connected("peer_disconnected", _on_peer_disconnected):
-		multiplayer.peer_disconnected.disconnect(_on_peer_disconnected)
-	
-	# Connect to these signals
+	# Connect to signals
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	
 	print("NetworkManager ready, signals connected")
+
 # HOST FUNCTIONS
 func create_server(room):
 	if connection_state != ConnectionState.DISCONNECTED:
@@ -77,16 +73,15 @@ func create_server(room):
 	multiplayer.multiplayer_peer = multiplayer_peer
 	connection_state = ConnectionState.CONNECTED_AS_HOST
 	
-	# Setup multiplayer signals
-	if !multiplayer.peer_connected.is_connected(_on_peer_connected):
-		multiplayer.peer_connected.connect(_on_peer_connected)
-	if !multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
-		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	# Server is ALWAYS ID 1
+	print("*** SERVER ID = 1, FORCING WHITE COLOR ***")
+	my_info.is_white = true
 	
 	my_info.status = "host"
 	
 	print("Server created with ID: " + str(multiplayer.get_unique_id()))
 	print("Server created for room: " + room_name)
+	print("I AM WHITE (host) - GUARANTEED BY ID")
 	return true
 
 # CLIENT FUNCTIONS
@@ -107,29 +102,33 @@ func connect_to_server(ip, room):
 		return false
 	
 	multiplayer.multiplayer_peer = multiplayer_peer
+	connection_state = ConnectionState.CONNECTED_AS_CLIENT
 	
-	# Setup multiplayer signals
-	if !multiplayer.connected_to_server.is_connected(_on_connected_to_server):
-		multiplayer.connected_to_server.connect(_on_connected_to_server)
-	if !multiplayer.connection_failed.is_connected(_on_connection_failed):
-		multiplayer.connection_failed.connect(_on_connection_failed)
-	if !multiplayer.server_disconnected.is_connected(_on_server_disconnected):
-		multiplayer.server_disconnected.connect(_on_server_disconnected)
+	# Non-server players ALWAYS have IDs > 1 in Godot networking
+	print("*** CLIENT ID > 1, FORCING BLACK COLOR ***")
+	my_info.is_white = false
 	
 	my_info.status = "client"
 	
+	# Setup client signals
+	multiplayer.connected_to_server.connect(_on_connected_to_server)
+	multiplayer.connection_failed.connect(_on_connection_failed)
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	
 	print("Connecting to server at " + ip + " for room: " + room_name)
 	print("Client connected with ID: " + str(multiplayer.get_unique_id()))
+	print("I AM BLACK (client) - GUARANTEED BY ID")
 	return true
 
 # GAME STATE FUNCTIONS
 func submit_army(army_data):
+	# FORCE COLOR BASED ON ID BEFORE SUBMISSION
+	set_color_by_id()
+	
 	my_info.army_data = army_data
 	my_info.status = "army_ready"
 	
-	# If we're the host, we decide who's white
-	if connection_state == ConnectionState.CONNECTED_AS_HOST:
-		my_info.is_white = randf() > 0.5
+	print("COLOR VERIFICATION: I am " + ("WHITE" if my_info.is_white else "BLACK"))
 	
 	# Send updated info to opponent
 	if opponent_id != 0:
@@ -137,6 +136,23 @@ func submit_army(army_data):
 		
 	# Check if we can start the game
 	check_game_start()
+
+# Helper function to set color definitively by ID
+func set_color_by_id():
+	var my_id = multiplayer.get_unique_id()
+	
+	# ID == 1 means server/host, which is WHITE
+	# Any other ID means client, which is BLACK
+	if my_id == 1:
+		if !my_info.is_white:
+			print("*** FIXING COLOR: ID=1 MUST BE WHITE ***")
+			my_info.is_white = true
+	else:
+		if my_info.is_white:
+			print("*** FIXING COLOR: ID>1 MUST BE BLACK ***")
+			my_info.is_white = false
+	
+	print("ID-BASED COLOR CHECK: ID=" + str(my_id) + ", I am " + ("WHITE" if my_info.is_white else "BLACK"))
 
 func send_move(from_pos, to_pos):
 	if opponent_id != 0:
@@ -158,6 +174,7 @@ func disconnect_from_game():
 	player_info.clear()
 	my_info.army_data = null
 	my_info.status = "lobby"
+	# Color will be set again when reconnecting
 
 # INTERNAL FUNCTIONS
 func _on_peer_connected(id):
@@ -165,6 +182,12 @@ func _on_peer_connected(id):
 	
 	# Store opponent ID
 	opponent_id = id
+	
+	# Force color by ID first
+	set_color_by_id()
+	
+	# Print color verification
+	print("COLOR CHECK: I am " + ("WHITE" if my_info.is_white else "BLACK"))
 	
 	# Send our info to the new player
 	update_player_info.rpc_id(id, my_info)
@@ -182,11 +205,16 @@ func _on_peer_disconnected(id):
 
 func _on_connected_to_server():
 	print("Connected to server")
-	connection_state = ConnectionState.CONNECTED_AS_CLIENT
 	
 	# If we know the server's ID, store it
 	if multiplayer.has_multiplayer_peer() and multiplayer.get_unique_id() != 1:
 		opponent_id = 1
+	
+	# Force color by ID
+	set_color_by_id()
+	
+	# Print color verification
+	print("COLOR CHECK AFTER SERVER CONNECTION: I am " + ("WHITE" if my_info.is_white else "BLACK"))
 	
 	# Send our info to the server
 	update_player_info.rpc_id(1, my_info)
@@ -203,15 +231,24 @@ func _on_server_disconnected():
 	connection_state = ConnectionState.DISCONNECTED
 	emit_signal("connection_failed")
 
-@rpc("any_peer")  # Remove call_local
+@rpc("any_peer")
 func update_player_info(info):
 	var id = multiplayer.get_remote_sender_id()
 	
 	print("Received player info update from " + str(id))
 	print("- Info contains army? " + str(info.army_data != null))
 	
-	# Store the player info
-	player_info[id] = info
+	# Enforce correct color based on ID for the received info
+	var corrected_info = info.duplicate()
+	corrected_info.is_white = (id == 1)  # ID 1 is white, others are black
+	
+	print("- Player SHOULD BE " + ("WHITE" if corrected_info.is_white else "BLACK") + " (by ID)")
+	
+	# Store the corrected player info
+	player_info[id] = corrected_info
+	
+	# Force our own color again
+	set_color_by_id()
 	
 	# Check if we can start the game 
 	print("Checking if game can start after receiving player info...")
@@ -235,6 +272,9 @@ func send_checkmate_to_opponent():
 	emit_signal("checkmate_received")
 
 func check_game_start():
+	# ENFORCE COLOR BY ID
+	set_color_by_id()
+	
 	print("Checking game start conditions...")
 	print("- My army ready: " + str(my_info.army_data != null))
 	print("- My color (white?): " + str(my_info.is_white))
@@ -244,6 +284,14 @@ func check_game_start():
 	if opponent_id != 0:
 		var opponent_info = player_info.get(opponent_id, null)
 		if opponent_info != null:
+			# FORCE OPPONENT COLOR BY ID
+			var opponent_should_be_white = (opponent_id == 1)
+			if opponent_info.is_white != opponent_should_be_white:
+				print("Fixing opponent color: " + str(opponent_id) + " should be " + 
+					  ("WHITE" if opponent_should_be_white else "BLACK"))
+				opponent_info.is_white = opponent_should_be_white
+				player_info[opponent_id] = opponent_info
+				
 			print("- Opponent army ready: " + str(opponent_info.army_data != null))
 			print("- Opponent color (white?): " + str(opponent_info.is_white))
 		else:
@@ -254,20 +302,11 @@ func check_game_start():
 		if my_info.army_data != null and opponent_info and opponent_info.army_data != null:
 			print("BOTH PLAYERS READY! Starting game!")
 			
+			# FINAL COLOR CHECK BEFORE GAME STARTS
+			set_color_by_id()
+			
 			# Set game state
 			game_state = GameState.GAME_READY
-			
-			# FIXED COLOR ASSIGNMENT:
-			if connection_state == ConnectionState.CONNECTED_AS_HOST:
-				# Host sets a random color
-				my_info.is_white = (randf() > 0.5)
-				print("HOST SET COLOR: I am " + ("WHITE" if my_info.is_white else "BLACK"))
-				# Tell client our updated info with the color
-				update_player_info.rpc_id(opponent_id, my_info)
-			else:
-				# Client takes opposite of host's color
-				my_info.is_white = !opponent_info.is_white
-				print("CLIENT SET COLOR: I am " + ("WHITE" if my_info.is_white else "BLACK"))
 			
 			print("Final color assignment - I am: " + ("WHITE" if my_info.is_white else "BLACK"))
 			
@@ -291,3 +330,9 @@ func check_game_start():
 		print("No opponent connected!")
 		
 	return false
+
+# Public helper function to get player color (100% reliable)
+func am_i_white():
+	# ALWAYS base color on player ID - most reliable way
+	var my_id = multiplayer.get_unique_id()
+	return my_id == 1

@@ -2,22 +2,24 @@ extends Node2D
 
 # Constants
 const MAX_BUDGET = 100
-const WHITE_VALID_ROWS = [5, 6, 7]  # Only white pieces are allowed
+const WHITE_VALID_ROWS = [6, 7]  # White pieces' starting rows (bottom)
+const BLACK_VALID_ROWS = [0, 1]  # Black pieces' starting rows (top)
 
 # References
 var board_view
 var unit_selector
 var selected_unit_type = null
-var selected_is_white = true  # Always true in this scene
+var selected_is_white = true  # Will be set based on NetworkManager
+var is_white_player = true  # Will be determined from NetworkManager
 
 # UI Elements
 @onready var budget_label = $CanvasLayer/UI/VBoxContainer/BudgetLabel
 @onready var warning_label = $CanvasLayer/UI/VBoxContainer/WarningLabel
 @onready var submit_button = $CanvasLayer/UI/VBoxContainer/SubmitButton
-@onready var info_label = $CanvasLayer/UI/VBoxContainer/InfoLabel
+@onready var title_label = $CanvasLayer/UI/VBoxContainer/Title
 
 # Army tracking
-var white_budget = MAX_BUDGET
+var budget = MAX_BUDGET
 var placed_units = {}  # {position_str: {type: unit_type, is_white: bool}}
 var unit_costs = {}
 var has_king = false
@@ -33,11 +35,33 @@ func _ready():
 	board_view = $BoardView
 	unit_selector = $CanvasLayer/UI/UnitSelector
 	
+	# Get player color from NetworkManager - DIRECT ID CHECK
+	var network_manager = get_node_or_null("/root/NetworkManager")
+	if network_manager:
+		# Use player ID to determine color (100% reliable)
+		var my_id = multiplayer.get_unique_id()
+		is_white_player = (my_id == 1)  # ID 1 is WHITE, anything else is BLACK
+		
+		print("ID-BASED COLOR ASSIGNMENT: ID=" + str(my_id) + ", I am " + ("WHITE" if is_white_player else "BLACK"))
+		
+		# Always set selected_is_white to match the player's color
+		selected_is_white = is_white_player
+		
+		# Update title to show player's color
+		title_label.text = "Army Builder - " + ("WHITE" if is_white_player else "BLACK")
+	else:
+		push_error("ERROR: NetworkManager not found!")
+	
+	
 	# Connect to board_view signals
 	if board_view:
 		print("Found BoardView, connecting signals")
 		if not board_view.is_connected("square_clicked", _on_board_square_clicked):
 			board_view.connect("square_clicked", _on_board_square_clicked)
+			
+		# Add right-click handler to board
+		if not board_view.is_connected("gui_input", _on_board_right_click):
+			board_view.connect("gui_input", _on_board_right_click)
 	else:
 		push_error("ERROR: BoardView not found!")
 	
@@ -50,6 +74,9 @@ func _ready():
 	if unit_selector:
 		print("Found UnitSelector, connecting signals")
 		unit_selector.connect("unit_selected", _on_unit_selected)
+		
+		# Only show pieces of player's color - HIDE the opposite color completely
+		unit_selector.show_only_color(is_white_player)
 	else:
 		push_error("ERROR: UnitSelector not found")
 	
@@ -59,15 +86,27 @@ func _ready():
 	warning_label.add_theme_color_override("font_color", Color.RED)
 	submit_button.disabled = true
 	
-	# Only allow white pieces - override UnitSelector behavior
-	if unit_selector and unit_selector.has_method("set_white_only"):
-		unit_selector.set_white_only(true)
-	
 	print("SingleUnitManager initialized successfully")
+
+# Handle right-click on the board
+func _on_board_right_click(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		# Convert mouse position to board coordinates
+		var clicked_pos = board_view.get_local_mouse_position()
+		
+		# Find the clicked square
+		for x in range(8):
+			for y in range(8):
+				var screen_pos = board_view.board_to_screen(x, y)
+				var distance = clicked_pos.distance_to(screen_pos)
+				if distance < 16:  # Within a reasonable distance of the square center
+					print("Right-clicked square at ", x, ", ", y)
+					remove_unit_at(x, y)
+					return
 
 # Update the budget display
 func update_budget_display():
-	budget_label.text = "Budget: " + str(white_budget)
+	budget_label.text = "Budget: " + str(budget)
 
 # Handle clicks from BoardView signal
 func _on_board_square_clicked(x, y):
@@ -80,9 +119,10 @@ func _on_board_square_clicked(x, y):
 		return
 	
 	# Check if placement is valid based on row restrictions
-	if not y in WHITE_VALID_ROWS:
-		warning_label.text = "Can only place pieces in your starting rows (5-7)"
-		print("Invalid row for white unit:", y)
+	var valid_rows = WHITE_VALID_ROWS if is_white_player else BLACK_VALID_ROWS
+	if not y in valid_rows:
+		warning_label.text = "Can only place pieces in your starting rows"
+		print("Invalid row for", "white" if is_white_player else "black", "unit:", y)
 		return
 	
 	# If there's already a unit, remove it first
@@ -90,17 +130,22 @@ func _on_board_square_clicked(x, y):
 		print("Removing existing unit at", x, y)
 		remove_unit_at(x, y)
 	
+	# Check for king limit
+	if selected_unit_type == "King" and has_king:
+		warning_label.text = "You can only have one king!"
+		return
+	
 	# Check if we can afford this unit using the appropriate budget
 	var cost = unit_costs.get(selected_unit_type, 9999)  # Default high value if not found
 	
-	if selected_unit_type != "King" and white_budget < cost:
+	if selected_unit_type != "King" and budget < cost:
 		warning_label.text = "Not enough budget for " + selected_unit_type
-		print("Not enough budget for", selected_unit_type, "- needed:", cost, "have:", white_budget)
+		print("Not enough budget for", selected_unit_type, "- needed:", cost, "have:", budget)
 		return
 	
-	# Place the unit
+	# Place the unit (always use the player's assigned color)
 	print("PLACING:", selected_unit_type, "at", x, y)
-	place_unit(selected_unit_type, true, x, y)
+	place_unit(selected_unit_type, is_white_player, x, y)
 
 # Load unit costs from script files
 func load_unit_costs():
@@ -131,7 +176,8 @@ func load_unit_costs():
 func _on_unit_selected(unit_type, is_white):
 	print("SingleUnitManager: Selected unit", unit_type)
 	selected_unit_type = unit_type
-	selected_is_white = true  # Always true in this scene
+	# Always use player's color
+	selected_is_white = is_white_player
 
 # Check if there's a unit at a position
 func has_unit_at(x, y):
@@ -172,7 +218,7 @@ func place_unit(unit_type, is_white, x, y):
 	
 	# Update budget and tracking
 	if unit_type != "King":
-		white_budget -= unit_costs[unit_type]
+		budget -= unit_costs[unit_type]
 	
 	# Track the unit
 	var pos_str = str(Vector2(x, y))
@@ -212,7 +258,7 @@ func remove_unit_at(x, y):
 		if unit.board_position.x == x and unit.board_position.y == y:
 			# Refund the cost (except for kings)
 			if unit_type != "King":
-				white_budget += unit_costs[unit_type]
+				budget += unit_costs[unit_type]
 			
 			# Update king status
 			if unit_type == "King":
@@ -238,6 +284,7 @@ func update_king_status():
 		submit_button.disabled = false
 	else:
 		warning_label.text = "You need a king!"
+		warning_label.add_theme_color_override("font_color", Color.RED)
 		submit_button.disabled = true
 
 # Clear the entire board
@@ -256,14 +303,14 @@ func clear_board():
 	
 	# Reset tracking variables
 	placed_units.clear()
-	white_budget = MAX_BUDGET
+	budget = MAX_BUDGET
 	has_king = false
 	
 	# Update UI
 	update_budget_display()
 	update_king_status()
 
-# Handle submit button press - this is different from the original
+# Handle submit button press
 func _on_Submit_pressed():
 	if !has_king:
 		warning_label.text = "Cannot submit: You need a king!"

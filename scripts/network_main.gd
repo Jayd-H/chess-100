@@ -4,6 +4,7 @@ extends Node2D
 var chess_board = null
 var game_controller = null
 var chess_logic = null
+var board_view = null
 var is_white_player = false
 var is_my_turn = false
 
@@ -11,6 +12,7 @@ var is_my_turn = false
 @onready var turn_label = $CanvasLayer/TurnLabel
 @onready var network_label = $CanvasLayer/NetworkLabel
 @onready var back_button = $CanvasLayer/BackButton
+
 
 func _ready():
 	# Style the UI
@@ -30,9 +32,12 @@ func _ready():
 		get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
 		return
 	
-	# Get our color from NetworkManager
-	is_white_player = NetworkManager.my_info.is_white
+	# Get our color from NetworkManager based on ID
+	var my_id = multiplayer.get_unique_id()
+	is_white_player = (my_id == 1)  # ID 1 is white, everything else is black
 	is_my_turn = is_white_player  # White goes first
+	
+	print("Network game color determined by ID: " + str(my_id) + ", I am " + ("WHITE" if is_white_player else "BLACK"))
 	
 	# Connect to NetworkManager signals
 	if !NetworkManager.is_connected("move_received", _on_network_move_received):
@@ -56,6 +61,18 @@ func _ready():
 	if chess_logic.has_signal("move_made"):
 		if !chess_logic.is_connected("move_made", _on_chess_move_made):
 			chess_logic.connect("move_made", _on_chess_move_made)
+	
+	if chess_logic.has_signal("check_occurred"):
+		if !chess_logic.is_connected("check_occurred", _on_check_occurred):
+			chess_logic.connect("check_occurred", _on_check_occurred)
+	
+	if chess_logic.has_signal("checkmate_occurred"):
+		if !chess_logic.is_connected("checkmate_occurred", _on_checkmate_occurred):
+			chess_logic.connect("checkmate_occurred", _on_checkmate_occurred)
+	
+	if chess_logic.has_signal("stalemate_occurred"):
+		if !chess_logic.is_connected("stalemate_occurred", _on_stalemate_occurred):
+			chess_logic.connect("stalemate_occurred", _on_stalemate_occurred)
 	
 	if game_controller.has_signal("game_state_changed"):
 		if !game_controller.is_connected("game_state_changed", _on_game_state_changed):
@@ -88,7 +105,6 @@ func setup_ui():
 
 # Setup armies for networked game
 func setup_network_game():
-	# Log before doing anything
 	print("Setting up network game. I am: " + ("WHITE" if is_white_player else "BLACK"))
 	
 	# Organize army data for both sides
@@ -105,7 +121,7 @@ func setup_network_game():
 	else:
 		push_error("ERROR: Opponent army data not found!")
 		return
-	
+		
 	# My army data
 	var my_army = NetworkManager.my_info.army_data
 	
@@ -196,16 +212,55 @@ func _on_network_move_received(from_pos, to_pos):
 	if chess_logic:
 		var unit = chess_logic.get_unit_at(from_pos.x, from_pos.y)
 		if unit != null:
-			chess_logic.make_move(unit, from_pos, to_pos)
+			# Make the move with the full function - this will trigger check detection
+			var captured_unit = chess_logic.make_move(unit, from_pos, to_pos)
+			
+			# Update UI if needed - though signals should handle this
+			update_ui()
 		else:
 			push_error("ERROR: No unit found at position " + str(from_pos))
 	else:
 		push_error("ERROR: ChessLogic not found")
 
+# Handler for check occurrences
+func _on_check_occurred(is_white_king):
+	print("Check detected! " + ("White" if is_white_king else "Black") + " king is in check")
+	
+	# Highlight the king in check
+	if chess_logic:
+		var king_pos = chess_logic.find_king(is_white_king)
+		if king_pos != null and board_view:
+			var board_view = chess_board.get_node_or_null("BoardView")
+			if board_view:
+				board_view.highlight_check_square(king_pos.x, king_pos.y)
+				print("Highlighting check at " + str(king_pos))
+			
+	# Update UI
+	update_ui()
+
+# Handler for checkmate
+func _on_checkmate_occurred(is_white_king):
+	print("Checkmate! " + ("Black" if is_white_king else "White") + " wins!")
+	
+	# Update UI with winner
+	turn_label.text = ("Black" if is_white_king else "White") + " wins by checkmate!"
+		
+	# If we're the player that caused checkmate, notify the opponent
+	if is_white_player != is_white_king:  # We're the player who made the checkmate move
+		NetworkManager.send_checkmate()
+
+# Handler for stalemate
+func _on_stalemate_occurred():
+	print("Stalemate! Game is a draw.")
+	
+	# Update UI
+	turn_label.text = "Game drawn by stalemate"
+
 # Handler for when opponent sends checkmate
 func _on_network_checkmate_received():
 	print("Opponent declared checkmate!")
 	# Game state will be updated by the move that caused checkmate
+	update_ui()
 
 # Handler for game state changes
 func _on_game_state_changed(state):
@@ -225,8 +280,9 @@ func _on_player_disconnected(id):
 
 # Button handler to leave the game
 func _on_back_button_pressed():
-	# Disconnect from NetworkManager
-	NetworkManager.disconnect_from_game()
+	# Disconnect from game if connected
+	if get_node_or_null("/root/NetworkManager"):
+		NetworkManager.disconnect_from_game()
 	
 	# Return to lobby
 	get_tree().change_scene_to_file("res://scenes/ui/lobby_menu.tscn")

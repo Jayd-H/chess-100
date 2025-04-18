@@ -76,6 +76,18 @@ func _on_black_button_pressed():
 		update_visual_state()
 		emit_signal("black_unit_selected")
 
+# Force white selection (for white-only mode)
+func force_white_selection():
+	is_selected = false
+	selected_color = null
+	update_visual_state()
+
+# Force black selection (for black-only mode)
+func force_black_selection():
+	is_selected = false
+	selected_color = null
+	update_visual_state()
+
 # Update the visual appearance based on selection state
 func update_visual_state():
 	# Reset appearance

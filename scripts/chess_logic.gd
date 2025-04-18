@@ -53,17 +53,30 @@ func handle_square_click(x, y):
 	
 	print("Chess Logic: Square clicked at ", x, ", ", y)
 	
+	# Determine player color by ID (most reliable)
+	var my_id = multiplayer.get_unique_id()
+	var my_is_white = (my_id == 1)  # ID 1 is WHITE, anything else is BLACK
+	
+	print("Move attempt by player ID=" + str(my_id) + " (" + ("WHITE" if my_is_white else "BLACK") + ")")
+	
 	# If no unit is selected, try to select one
 	if selected_unit == null:
 		var unit = board[x][y]
-		if unit != null and unit.is_white == is_white_turn:
-			# Select the unit
-			selected_unit = unit
-			selected_pos = Vector2(x, y)
-			print("Selected unit: ", unit.unit_type)
-			return true
+		if unit != null:
+			# Check if it's the player's turn and their piece
+			if unit.is_white == is_white_turn and unit.is_white == my_is_white:
+				# Select the unit
+				selected_unit = unit
+				selected_pos = Vector2(x, y)
+				print("Selected unit: ", unit.unit_type)
+				return true
+			else:
+				if unit.is_white != my_is_white:
+					print("Cannot select opponent's piece")
+				else:
+					print("Cannot move during opponent's turn")
+				return false
 	
-	# If a unit is already selected, try to move it
 	else:
 		# Check if the target is a valid move
 		if is_valid_move(selected_unit, Vector2(x, y)):
@@ -73,9 +86,6 @@ func handle_square_click(x, y):
 			# Clear selections
 			selected_unit = null
 			selected_pos = Vector2(-1, -1)
-			
-			# Check game state after move
-			check_game_state()
 			
 			return true
 		
@@ -103,8 +113,6 @@ func get_valid_moves_for_selected():
 	
 	return get_valid_moves(selected_unit)
 
-# Get valid moves for a specific unit
-# Get valid moves for a specific unit
 # Get valid moves for a specific unit
 func get_valid_moves(unit):
 	if unit == null:
@@ -249,7 +257,10 @@ func make_move(unit, from_pos, to_pos):
 	# Switch turns
 	is_white_turn = !is_white_turn
 	
-	# Emit signal
+	# Check game state BEFORE emitting signals
+	check_game_state()
+	
+	# Emit signals now that game state has been updated
 	move_made.emit(unit, from_pos, to_pos, is_capture, captured_unit)
 	turn_changed.emit(is_white_turn)
 	
@@ -347,20 +358,26 @@ func is_stalemate(is_white_player):
 
 # Check game state after a move
 func check_game_state():
-	# Check if current player is in check
+	# Check if current player (whose turn it is now) is in check
 	if is_king_in_check(is_white_turn):
-		print("Emitting check_occurred signal for player:", "White" if is_white_turn else "Black")
+		print("DETECTED CHECK: " + ("WHITE" if is_white_turn else "BLACK") + " king is in check!")
 		check_occurred.emit(is_white_turn)
 		
 		# Check if it's checkmate
 		if is_checkmate(is_white_turn):
+			print("CHECKMATE DETECTED! " + ("WHITE" if is_white_turn else "BLACK") + " is checkmated!")
 			game_over = true
 			checkmate_occurred.emit(is_white_turn)
+			return true
 	
 	# Check for stalemate
 	elif is_stalemate(is_white_turn):
+		print("STALEMATE DETECTED!")
 		game_over = true
 		stalemate_occurred.emit()
+		return true
+		
+	return false
 
 # Get the board representation
 func get_board():
@@ -377,7 +394,6 @@ func place_unit(unit, x, y):
 			
 		return true
 	return false
-
 
 # Remove a unit from the board
 func remove_unit(x, y):

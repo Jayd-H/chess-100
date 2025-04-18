@@ -10,7 +10,6 @@ var unit_types = []  # Will be populated automatically
 @onready var container: VBoxContainer = $ScrollContainer/VBoxContainer
 
 func _ready():
-		
 	# Get reference to the placement manager
 	placement_manager = get_node("/root").find_child("PlacementManager", true, false)
 	if not placement_manager:
@@ -130,15 +129,41 @@ func _on_unit_selected(unit_type, is_white):
 	else:
 		push_error("No placement manager available")
 
-func set_white_only(white_only):
+# Show only buttons of the specified color
+func show_only_color(is_white):
+	print("Setting unit selector to show only " + ("WHITE" if is_white else "BLACK") + " pieces")
+	
+	# COMPLETELY HIDE the opposite color buttons
 	for button in unit_buttons:
-		# For each button, only enable the white button if white_only is true
+		# Hide both initially
+		if button.has_node("VBoxContainer/HBoxContainer/WhiteButton"):
+			button.get_node("VBoxContainer/HBoxContainer/WhiteButton").visible = false
+			button.get_node("VBoxContainer/HBoxContainer/WhiteButton").disabled = true
+			
 		if button.has_node("VBoxContainer/HBoxContainer/BlackButton"):
-			var black_button = button.get_node("VBoxContainer/HBoxContainer/BlackButton")
-			black_button.visible = !white_only
-			black_button.disabled = white_only
+			button.get_node("VBoxContainer/HBoxContainer/BlackButton").visible = false
+			button.get_node("VBoxContainer/HBoxContainer/BlackButton").disabled = true
+			
+		# Then show only the color we want
+		if is_white:
+			if button.has_node("VBoxContainer/HBoxContainer/WhiteButton"):
+				button.get_node("VBoxContainer/HBoxContainer/WhiteButton").visible = true
+				button.get_node("VBoxContainer/HBoxContainer/WhiteButton").disabled = false
+		else:
+			if button.has_node("VBoxContainer/HBoxContainer/BlackButton"):
+				button.get_node("VBoxContainer/HBoxContainer/BlackButton").visible = true
+				button.get_node("VBoxContainer/HBoxContainer/BlackButton").disabled = false
+	
+	# Make sure remaining buttons are centered
+	for button in unit_buttons:
+		if button.has_node("VBoxContainer/HBoxContainer"):
+			button.get_node("VBoxContainer/HBoxContainer").alignment = BoxContainer.ALIGNMENT_CENTER
 
 # Clear all selections
 func clear_selection():
 	for button in unit_buttons:
 		button.deselect()
+
+# Legacy method for compatibility
+func set_white_only(white_only):
+	show_only_color(white_only)

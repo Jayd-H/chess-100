@@ -284,6 +284,7 @@ func _on_check_occurred(is_white_king):
 	if chess_logic:
 		var king_pos = chess_logic.find_king(is_white_king)
 		if king_pos != null and board_view:
+			print("*** HIGHLIGHTING KING IN CHECK at " + str(king_pos) + " ***")
 			board_view.highlight_check_square(king_pos.x, king_pos.y)
 			check_highlight_pos = king_pos
 			print("King in check! Highlighting king at", king_pos)
