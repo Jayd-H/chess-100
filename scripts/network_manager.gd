@@ -155,6 +155,8 @@ func set_color_by_id():
 	print("ID-BASED COLOR CHECK: ID=" + str(my_id) + ", I am " + ("WHITE" if my_info.is_white else "BLACK"))
 
 func send_move(from_pos, to_pos):
+	print("NetworkManager.send_move called with: ", from_pos, " -> ", to_pos)
+	print("opponent_id: ", opponent_id)
 	if opponent_id != 0:
 		send_move_to_opponent.rpc_id(opponent_id, from_pos, to_pos)
 

@@ -13,7 +13,6 @@ var is_my_turn = false
 @onready var network_label = $CanvasLayer/NetworkLabel
 @onready var back_button = $CanvasLayer/BackButton
 
-
 func _ready():
 	# Style the UI
 	setup_ui()
@@ -200,7 +199,12 @@ func update_ui():
 
 # Handler for when local player makes a move
 func _on_chess_move_made(unit, from_pos, to_pos, is_capture, captured_unit):
-	if is_my_turn:
+	print("Move made - unit color: " + ("white" if unit.is_white else "black"))
+	print("My color: " + ("white" if is_white_player else "black"))
+	print("Current turn: " + ("white" if chess_logic.is_white_turn else "black"))
+	print("is_my_turn: " + str(is_my_turn))
+	
+	if unit.is_white == is_white_player:
 		print("Sending move to opponent: ", from_pos, " -> ", to_pos)
 		NetworkManager.send_move(from_pos, to_pos)
 
