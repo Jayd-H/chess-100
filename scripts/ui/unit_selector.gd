@@ -22,28 +22,39 @@ func _ready():
 	create_unit_buttons()
 
 func load_unit_types():
-	unit_types.clear()
+	unit_types = [
+		"King", "Queen", "Rook", "Bishop", "Knight", "Pawn", 
+		"Archer", "Cannon", "Chancellor", "Diplomat", "Dragon", 
+		"Elephant", "Guard", "Slime", "Wizard"
+	]
 	
-	# Open the units directory
-	var dir = DirAccess.open("res://scripts/units/")
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
+	# Sort the units in a more logical order (your existing code)
+	unit_types.sort_custom(func(a, b):
+		# Define priority order for standard pieces
+		var priority = {
+			"King": 0,
+			"Queen": 1,
+			"Rook": 2, 
+			"Bishop": 3,
+			"Knight": 4,
+			"Pawn": 5
+		}
 		
-		while file_name != "":
-			# Only consider GDScript files
-			if file_name.ends_with(".gd"):
-				# Extract unit type name from the file name (remove .gd extension)
-				var unit_type = file_name.get_basename().capitalize()
-				
-				print("Found unit type: ", unit_type)
-				unit_types.append(unit_type)
-			
-			file_name = dir.get_next()
-		
-		dir.list_dir_end()
-	else:
-		push_error("ERROR: Could not access scripts/units directory")
+		# Check if both are standard pieces
+		if priority.has(a) and priority.has(b):
+			return priority[a] < priority[b]
+		# If only a is standard, it goes first
+		elif priority.has(a):
+			return true
+		# If only b is standard, it goes first
+		elif priority.has(b):
+			return false
+		# Otherwise sort alphabetically
+		else:
+			return a < b
+	)
+	
+	print("Loaded unit types: ", unit_types)
 	
 	# Sort the units in a more logical order
 	# Put King and Queen first, then standard chess pieces, then others alphabetically

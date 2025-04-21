@@ -26,9 +26,6 @@ var has_white_king = false
 var has_black_king = false
 
 func _ready():
-	# Load unit costs first
-	load_unit_costs()
-	
 	# IMPORTANT: Wait a frame to make sure all nodes are loaded
 	await get_tree().process_frame
 	
@@ -91,7 +88,7 @@ func _on_board_square_clicked(x, y):
 		remove_unit_at(x, y)
 	
 	# Check if we can afford this unit using the appropriate budget
-	var cost = unit_costs.get(selected_unit_type, 9999)  # Default high value if not found
+	var cost = UnitData.get_unit_cost(selected_unit_type)
 	var current_budget = white_budget if selected_is_white else black_budget
 	
 	if selected_unit_type != "King" and current_budget < cost:
@@ -174,9 +171,9 @@ func place_unit(unit_type, is_white, x, y):
 	# Update budget and tracking
 	if unit_type != "King":
 		if is_white:
-			white_budget -= unit_costs[unit_type]
+			white_budget -= UnitData.get_unit_cost(unit_type)
 		else:
-			black_budget -= unit_costs[unit_type]
+			black_budget -= UnitData.get_unit_cost(unit_type)
 	
 	# Track the unit
 	var pos_str = str(Vector2(x, y))
@@ -221,9 +218,9 @@ func remove_unit_at(x, y):
 			# Refund the cost (except for kings)
 			if unit_type != "King":
 				if is_white:
-					white_budget += unit_costs[unit_type]
+					white_budget += UnitData.get_unit_cost(unit_type)
 				else:
-					black_budget += unit_costs[unit_type]
+					black_budget += UnitData.get_unit_cost(unit_type)
 			
 			# Update king status
 			if unit_type == "King":

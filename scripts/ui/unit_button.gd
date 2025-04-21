@@ -37,20 +37,17 @@ func _ready():
 func initialize(type):
 	unit_type = type
 	
-	# Set label text if the label exists
 	if unit_label:
 		unit_label.text = unit_type
 	
-	# Load the appropriate sprites
-	var white_texture = load("res://assets/sprites/whiteunits/" + unit_type + ".png")
-	var black_texture = load("res://assets/sprites/blackunits/" + unit_type + ".png")
+	# Use the same approach as in base_unit.gd
+	if white_button:
+		var white_path = "res://assets/sprites/%s/%s.png" % ["whiteunits", unit_type]
+		white_button.texture_normal = load(white_path)
 	
-	# Set button textures if buttons exist
-	if white_button and white_texture:
-		white_button.texture_normal = white_texture
-	
-	if black_button and black_texture:
-		black_button.texture_normal = black_texture
+	if black_button:
+		var black_path = "res://assets/sprites/%s/%s.png" % ["blackunits", unit_type]
+		black_button.texture_normal = load(black_path)
 
 # Handle white button selection
 func _on_white_button_pressed():

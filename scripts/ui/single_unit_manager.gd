@@ -25,9 +25,6 @@ var unit_costs = {}
 var has_king = false
 
 func _ready():
-	# Load unit costs first
-	load_unit_costs()
-	
 	# IMPORTANT: Wait a frame to make sure all nodes are loaded
 	await get_tree().process_frame
 	
@@ -51,7 +48,6 @@ func _ready():
 		title_label.text = "Army Builder - " + ("WHITE" if is_white_player else "BLACK")
 	else:
 		push_error("ERROR: NetworkManager not found!")
-	
 	
 	# Connect to board_view signals
 	if board_view:
@@ -136,7 +132,7 @@ func _on_board_square_clicked(x, y):
 		return
 	
 	# Check if we can afford this unit using the appropriate budget
-	var cost = unit_costs.get(selected_unit_type, 9999)  # Default high value if not found
+	var cost = UnitData.get_unit_cost(selected_unit_type)
 	
 	if selected_unit_type != "King" and budget < cost:
 		warning_label.text = "Not enough budget for " + selected_unit_type
@@ -218,7 +214,7 @@ func place_unit(unit_type, is_white, x, y):
 	
 	# Update budget and tracking
 	if unit_type != "King":
-		budget -= unit_costs[unit_type]
+		budget -= UnitData.get_unit_cost(unit_type)
 	
 	# Track the unit
 	var pos_str = str(Vector2(x, y))
@@ -258,7 +254,7 @@ func remove_unit_at(x, y):
 		if unit.board_position.x == x and unit.board_position.y == y:
 			# Refund the cost (except for kings)
 			if unit_type != "King":
-				budget += unit_costs[unit_type]
+				budget += UnitData.get_unit_cost(unit_type)
 			
 			# Update king status
 			if unit_type == "King":
